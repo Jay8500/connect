@@ -4,19 +4,14 @@ import { Icon } from './icon';
 import { Scene, User } from '../core/models';
 import { Store } from '../core/store';
 
-/** Connect mark: two people (Spread dots) side by side with a heart between them. */
+/** Connect mark (public/connect-icon.svg): a chat bubble with a heart — talk to the people you love. */
 @Component({
   selector: 'app-logo',
   imports: [RouterLink],
   host: { class: 'inline-flex' },
   template: `
     <a [routerLink]="link()" class="inline-flex items-center gap-2" aria-label="Connect home">
-      <svg viewBox="0 0 64 64" [attr.width]="size()" [attr.height]="size()" aria-hidden="true">
-        <rect width="64" height="64" rx="16" fill="#0D9488" />
-        <circle cx="22" cy="30" r="10" fill="#fff" />
-        <circle cx="42" cy="30" r="10" fill="#CCFBF1" />
-        <path d="M32 49c-6.4-4.6-7-10.6-3.4-11.7 1.6-.5 2.7.4 3.4 1.6.7-1.2 1.8-2.1 3.4-1.6C39 38.4 38.4 44.4 32 49z" fill="#FB7185" />
-      </svg>
+      <img src="connect-icon.svg" [attr.width]="size()" [attr.height]="size()" alt="" />
       @if (word()) {
         <span class="leading-none">
           <span class="block font-[family-name:var(--font-display)] text-xl font-extrabold tracking-tight">connect</span>
