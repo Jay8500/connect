@@ -1,15 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { LANGS } from '../core/i18n';
 import { Settings } from '../core/models';
 import { Store } from '../core/store';
 import { Icon } from '../shared/icon';
 import { Avatar, Switch, Toast } from '../shared/ui';
 
-const LANGS: { id: Settings['lang']; label: string }[] = [
-  { id: 'en', label: 'English' },
-  { id: 'te', label: 'తెలుగు' },
-  { id: 'hi', label: 'हिन्दी' },
-];
 const SOON_LANGS = ['தமிழ்', 'ಕನ್ನಡ', 'മലയാളം', 'मराठी', 'বাংলা', 'ગુજરાતી', 'ਪੰਜਾਬੀ', 'ଓଡ଼ିଆ', 'اردو'];
 const DEVICES = [
   { name: 'This phone · Chrome on Android', place: 'Vijayawada', at: 'Active now', icon: 'smartphone', current: true },

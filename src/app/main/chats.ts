@@ -5,14 +5,14 @@ import { Chat } from '../core/models';
 import { Store } from '../core/store';
 import { Icon } from '../shared/icon';
 import { Report } from '../shared/report';
-import { Avatar, SceneView, Toast } from '../shared/ui';
+import { Avatar, Dropdown, SceneView, Toast } from '../shared/ui';
 
 type ChatTab = 'All' | 'Unread' | 'Groups' | 'Requests';
 const REPLIES = ['😊👍', 'Sare, ok!', 'Haha 😂', 'Will call you in the evening', 'Thanks ra 🙏', 'Done ✅'];
 
 @Component({
   selector: 'app-chats',
-  imports: [RouterLink, NgTemplateOutlet, Icon, Avatar, SceneView],
+  imports: [RouterLink, NgTemplateOutlet, Icon, Avatar, SceneView, Dropdown],
   template: `
     <div class="flex lg:h-[calc(100dvh-3rem)] lg:gap-4 lg:py-6">
       <!-- Chat list -->
@@ -73,22 +73,16 @@ const REPLIES = ['😊👍', 'Sare, ok!', 'Haha 😂', 'Will call you in the eve
             </div>
             <button class="icon-btn" (click)="toast.show('Voice calls are coming soon')" aria-label="Voice call"><svg lucideIcon="phone" [size]="20" /></button>
             <button class="icon-btn" (click)="toast.show('Video calls are coming soon')" aria-label="Video call"><svg lucideIcon="video" [size]="20" /></button>
-            <div class="relative">
-              <button class="icon-btn" (click)="menu.set(!menu())" aria-label="Chat options"><svg lucideIcon="more" [size]="20" /></button>
-              @if (menu()) {
-                <div class="fixed inset-0 z-10" (click)="menu.set(false)"></div>
-                <div class="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-2xl border border-line bg-white py-1 text-sm shadow-xl">
-                  <button class="menu-item" (click)="store.togglePin(c.id); menu.set(false)"><svg lucideIcon="pin" [size]="17" />{{ c.pinned ? 'Unpin chat' : 'Pin chat' }}</button>
-                  <button class="menu-item" (click)="store.toggleMute(c.id); menu.set(false)"><svg lucideIcon="bell-off" [size]="17" />{{ c.muted ? 'Unmute' : 'Mute notifications' }}</button>
-                  <button class="menu-item" (click)="toast.show('Disappearing messages: 24 hours (real app)'); menu.set(false)"><svg lucideIcon="clock" [size]="17" />Disappearing messages</button>
-                  @if (c.kind === 'direct') {
-                    <button class="menu-item text-love" (click)="blockUser(c)"><svg lucideIcon="ban" [size]="17" />Block</button>
-                  }
-                  <button class="menu-item text-love" (click)="report.open('chat'); menu.set(false)"><svg lucideIcon="flag" [size]="17" />Report</button>
-                  <button class="menu-item text-love" (click)="deleteChat(c)"><svg lucideIcon="trash" [size]="17" />Delete chat</button>
-                </div>
+            <app-dropdown label="Chat options">
+              <button class="menu-item" (click)="store.togglePin(c.id)"><svg lucideIcon="pin" [size]="17" />{{ c.pinned ? 'Unpin chat' : 'Pin chat' }}</button>
+              <button class="menu-item" (click)="store.toggleMute(c.id)"><svg lucideIcon="bell-off" [size]="17" />{{ c.muted ? 'Unmute' : 'Mute notifications' }}</button>
+              <button class="menu-item" (click)="toast.show('Disappearing messages: 24 hours (real app)')"><svg lucideIcon="clock" [size]="17" />Disappearing messages</button>
+              @if (c.kind === 'direct') {
+                <button class="menu-item text-love" (click)="blockUser(c)"><svg lucideIcon="ban" [size]="17" />Block</button>
               }
-            </div>
+              <button class="menu-item text-love" (click)="report.open('chat')"><svg lucideIcon="flag" [size]="17" />Report</button>
+              <button class="menu-item text-love" (click)="deleteChat(c)"><svg lucideIcon="trash" [size]="17" />Delete chat</button>
+            </app-dropdown>
           </header>
 
           <div #scroller class="flex-1 space-y-2 overflow-y-auto px-3 py-4 lg:px-8">
@@ -183,10 +177,6 @@ const REPLIES = ['😊👍', 'Sare, ok!', 'Haha 😂', 'Will call you in the eve
       }
     </ng-template>
   `,
-  styles: `
-    .menu-item { display: flex; width: 100%; align-items: center; gap: 0.6rem; padding: 0.6rem 0.9rem; text-align: left; }
-    .menu-item:hover { background: var(--color-soft); }
-  `,
 })
 export class Chats implements OnDestroy {
   protected readonly store = inject(Store);
@@ -200,7 +190,6 @@ export class Chats implements OnDestroy {
   protected readonly tab = signal<ChatTab>('All');
   protected readonly q = signal('');
   protected readonly draft = signal('');
-  protected readonly menu = signal(false);
   protected readonly typing = signal(false);
   protected readonly quickReplies = ['👍', 'Ok 👌', 'Call you later 📞', 'On my way 🛵', 'Thank you 🙏', 'Happy birthday 🎂'];
   protected readonly wave = [30, 60, 45, 80, 50, 90, 40, 70, 35, 65, 85, 45, 30, 55, 75, 40, 60, 30];
@@ -291,7 +280,6 @@ export class Chats implements OnDestroy {
   }
 
   blockUser(c: Chat) {
-    this.menu.set(false);
     this.store.block(c.memberIds[0]);
     this.store.deleteChat(c.id);
     this.toast.show(`${this.title(c)} is blocked. They can’t message or find you.`);
@@ -299,7 +287,6 @@ export class Chats implements OnDestroy {
   }
 
   deleteChat(c: Chat) {
-    this.menu.set(false);
     this.store.deleteChat(c.id);
     this.router.navigate(['/chats']);
   }

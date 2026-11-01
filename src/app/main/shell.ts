@@ -90,11 +90,12 @@ const BANNER_KEY = 'connect.previewNoteHidden';
       <!-- Desktop right column: only what needs action (chats get the full width instead) -->
       @if (!onChats()) {
         <aside class="sticky top-0 hidden h-dvh w-72 shrink-0 space-y-6 overflow-y-auto py-8 xl:block">
-          @if (!wished()) {
+          @for (id of birthdays(); track id) {
+            @let b = store.user(id);
             <div class="flex items-center gap-3 rounded-2xl bg-white p-3">
               <span class="grid h-10 w-10 place-items-center rounded-full bg-rose-50 text-love"><svg lucideIcon="cake" [size]="20" /></span>
-              <p class="flex-1 text-sm leading-snug"><b>Sneha</b>’s birthday today</p>
-              <button class="btn btn-primary btn-sm min-h-8!" (click)="wish()">Wish 🎉</button>
+              <p class="flex-1 text-sm leading-snug"><b>{{ b.name.split(' ')[0] }}</b>’s birthday today</p>
+              <button class="btn btn-primary btn-sm min-h-8!" (click)="wish(id)">Wish 🎉</button>
             </div>
           }
 
@@ -119,7 +120,7 @@ const BANNER_KEY = 'connect.previewNoteHidden';
           <section>
             <h2 class="mb-2 px-1 text-sm font-bold text-muted">Online now</h2>
             <div class="flex flex-wrap gap-3 px-1">
-              @for (id of onlineIds; track id) {
+              @for (id of store.online; track id) {
                 @let u = store.user(id);
                 <button class="relative" (click)="openChat(id)" [attr.aria-label]="'Chat with ' + u.name" [title]="u.name">
                   <app-avatar [user]="u" [size]="44" />
@@ -168,9 +169,9 @@ export class Shell {
 
   protected readonly sideNav = SIDE_NAV;
   protected readonly bottomNav = BOTTOM_NAV;
-  protected readonly onlineIds = ['u3', 'u2', 'u9', 'u8', 'u5'];
   protected readonly banner = signal(!readFlag(BANNER_KEY));
-  protected readonly wished = signal(false);
+  protected readonly wished = signal(new Set<string>());
+  protected readonly birthdays = computed(() => this.store.birthdays.filter((id) => !this.wished().has(id)));
 
   private readonly url = toSignal(this.router.events.pipe(filter((e) => e instanceof NavigationEnd), map(() => this.router.url)), { initialValue: this.router.url });
   /** An open chat uses the whole phone screen. */
@@ -188,11 +189,12 @@ export class Shell {
     this.router.navigate(['/chats', this.store.chatWith(userId)]);
   }
 
-  /** One tap birthday wish, straight into her chat. */
-  wish() {
-    this.store.send(this.store.chatWith('u9'), 'Happy birthday Sneha! 🎂🎉 Have a wonderful year!');
-    this.wished.set(true);
-    this.toast.show('Birthday wish sent to Sneha 🎉');
+  /** One-tap birthday wish, straight into their chat. */
+  wish(userId: string) {
+    const first = this.store.user(userId).name.split(' ')[0];
+    this.store.send(this.store.chatWith(userId), `Happy birthday ${first}! 🎂🎉 Have a wonderful year!`);
+    this.wished.update((s) => new Set(s).add(userId));
+    this.toast.show(`Birthday wish sent to ${first} 🎉`);
   }
 
   hideBanner() {

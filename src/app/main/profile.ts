@@ -5,13 +5,13 @@ import { Icon } from '../shared/icon';
 import { PhotoButton } from '../shared/photo';
 import { PostCard } from '../shared/post-card';
 import { Report } from '../shared/report';
-import { Avatar, SceneView, Toast } from '../shared/ui';
+import { Avatar, Dropdown, SceneView, Toast } from '../shared/ui';
 
 type Tab = 'Posts' | 'Photos' | 'About';
 
 @Component({
   selector: 'app-profile',
-  imports: [RouterLink, Icon, Avatar, SceneView, PostCard, PhotoButton],
+  imports: [RouterLink, Icon, Avatar, Dropdown, SceneView, PostCard, PhotoButton],
   template: `
     @if (user(); as u) {
       <div class="mx-auto max-w-[680px] lg:py-6">
@@ -34,17 +34,11 @@ type Tab = 'Posts' | 'Photos' | 'About';
                     <button class="btn btn-primary btn-sm" (click)="store.sendRequest(u.id)"><svg [lucideIcon]="store.sent().has(u.id) ? 'check' : 'user-plus'" [size]="16" />{{ store.sent().has(u.id) ? 'Requested' : 'Add friend' }}</button>
                   }
                   <button class="btn btn-ghost btn-sm" (click)="message()"><svg lucideIcon="message" [size]="16" />Message</button>
-                  <div class="relative">
-                    <button class="btn btn-ghost btn-sm px-2.5!" (click)="menu.set(!menu())" aria-label="More"><svg lucideIcon="more" [size]="16" /></button>
-                    @if (menu()) {
-                      <div class="fixed inset-0 z-10" (click)="menu.set(false)"></div>
-                      <div class="absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-2xl border border-line bg-white py-1 text-sm shadow-xl">
-                        <button class="menu-item" (click)="copy()"><svg lucideIcon="copy" [size]="17" />Copy profile link</button>
-                        <button class="menu-item text-love" (click)="block()"><svg lucideIcon="ban" [size]="17" />Block</button>
-                        <button class="menu-item text-love" (click)="report.open('profile'); menu.set(false)"><svg lucideIcon="flag" [size]="17" />Report profile</button>
-                      </div>
-                    }
-                  </div>
+                  <app-dropdown label="More" buttonClass="btn btn-ghost btn-sm px-2.5!">
+                    <button class="menu-item" (click)="copy()"><svg lucideIcon="copy" [size]="17" />Copy profile link</button>
+                    <button class="menu-item text-love" (click)="block()"><svg lucideIcon="ban" [size]="17" />Block</button>
+                    <button class="menu-item text-love" (click)="report.open('profile')"><svg lucideIcon="flag" [size]="17" />Report profile</button>
+                  </app-dropdown>
                 }
               </div>
             </div>
@@ -107,10 +101,6 @@ type Tab = 'Posts' | 'Photos' | 'About';
       </div>
     }
   `,
-  styles: `
-    .menu-item { display: flex; width: 100%; align-items: center; gap: 0.6rem; padding: 0.6rem 0.9rem; text-align: left; }
-    .menu-item:hover { background: var(--color-soft); }
-  `,
 })
 export class Profile {
   protected readonly store = inject(Store);
@@ -122,7 +112,6 @@ export class Profile {
   protected readonly compact = compact;
   protected readonly tabs: Tab[] = ['Posts', 'Photos', 'About'];
   protected readonly tab = signal<Tab>('Posts');
-  protected readonly menu = signal(false);
 
   protected readonly user = computed(() => this.store.byUsername(this.username()));
   protected readonly isMe = computed(() => this.user()?.id === this.store.me.id);
@@ -145,13 +134,11 @@ export class Profile {
   }
 
   block() {
-    this.menu.set(false);
     this.store.block(this.user()!.id);
     this.toast.show(`${this.user()!.name} is blocked`);
   }
 
   copy() {
-    this.menu.set(false);
     navigator.clipboard?.writeText(location.href).catch(() => {});
     this.toast.show('Profile link copied');
   }

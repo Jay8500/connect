@@ -1,5 +1,13 @@
 import { Injectable, inject } from '@angular/core';
+import { Settings } from './models';
 import { Store } from './store';
+
+/** Languages the app UI is available in. */
+export const LANGS: { id: Settings['lang']; label: string }[] = [
+  { id: 'en', label: 'English' },
+  { id: 'te', label: 'తెలుగు' },
+  { id: 'hi', label: 'हिन्दी' },
+];
 
 /** Main UI words in English, Telugu and Hindi. More languages (and full-screen text) come with the real app. */
 const WORDS = {

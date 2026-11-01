@@ -2,17 +2,16 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { I18n } from '../core/i18n';
 import { Post } from '../core/models';
-import { ME_ID } from '../core/data';
 import { Store, compact } from '../core/store';
 import { Icon } from './icon';
 import { Report } from './report';
-import { Avatar, Name, SceneView, Toast } from './ui';
+import { Avatar, Dropdown, Name, SceneView, Toast } from './ui';
 
 const AUDIENCE_ICON: Record<Post['audience'], string> = { Public: 'globe', Friends: 'users', Family: 'heart-handshake', 'Only me': 'lock' };
 
 @Component({
   selector: 'app-post-card',
-  imports: [Icon, Avatar, Name, SceneView, RouterLink],
+  imports: [Icon, Avatar, Name, SceneView, Dropdown, RouterLink],
   host: { class: 'block' },
   template: `
     @let p = post();
@@ -31,21 +30,15 @@ const AUDIENCE_ICON: Record<Post['audience'], string> = { Public: 'globe', Frien
             <span>·</span><svg [lucideIcon]="audienceIcon()" [size]="12" [attr.aria-label]="p.audience" />
           </div>
         </div>
-        <div class="relative">
-          <button class="icon-btn" (click)="menu.set(!menu())" aria-label="Post options"><svg lucideIcon="more" [size]="20" /></button>
-          @if (menu()) {
-            <div class="fixed inset-0 z-10" (click)="menu.set(false)"></div>
-            <div class="absolute right-0 z-20 mt-1 w-52 overflow-hidden rounded-2xl border border-line bg-white py-1 text-sm shadow-xl">
-              <button class="menu-item" (click)="copy()"><svg lucideIcon="copy" [size]="17" />Copy link</button>
-              @if (mine()) {
-                <button class="menu-item text-love" (click)="remove()"><svg lucideIcon="trash" [size]="17" />Delete post</button>
-              } @else {
-                <button class="menu-item" (click)="hide()"><svg lucideIcon="eye-off" [size]="17" />Hide this post</button>
-                <button class="menu-item text-love" (click)="reportIt()"><svg lucideIcon="flag" [size]="17" />Report post</button>
-              }
-            </div>
+        <app-dropdown label="Post options">
+          <button class="menu-item" (click)="copy()"><svg lucideIcon="copy" [size]="17" />Copy link</button>
+          @if (mine()) {
+            <button class="menu-item text-love" (click)="remove()"><svg lucideIcon="trash" [size]="17" />Delete post</button>
+          } @else {
+            <button class="menu-item" (click)="hidden.set(true)"><svg lucideIcon="eye-off" [size]="17" />Hide this post</button>
+            <button class="menu-item text-love" (click)="report.open('post')"><svg lucideIcon="flag" [size]="17" />Report post</button>
           }
-        </div>
+        </app-dropdown>
       </header>
 
       @if (hidden()) {
@@ -133,8 +126,6 @@ const AUDIENCE_ICON: Record<Post['audience'], string> = { Public: 'globe', Frien
   styles: `
     .action { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 9999px; padding: 0.45rem 0.7rem; transition: background 0.2s, color 0.2s; }
     .action:hover { background: var(--color-soft); }
-    .menu-item { display: flex; width: 100%; align-items: center; gap: 0.6rem; padding: 0.6rem 0.9rem; text-align: left; }
-    .menu-item:hover { background: var(--color-soft); }
     .burst { animation: burst 0.8s ease-out forwards; }
     @keyframes burst { 0% { opacity: 0; transform: scale(0.4); } 20% { opacity: 1; transform: scale(1.1); } 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1); } }
   `,
@@ -143,18 +134,17 @@ export class PostCard {
   protected readonly store = inject(Store);
   protected readonly i18n = inject(I18n);
   private readonly toast = inject(Toast);
-  private readonly report = inject(Report);
+  protected readonly report = inject(Report);
   readonly post = input.required<Post>();
 
   protected readonly compact = compact;
   protected readonly quickComments = ['👏 Super!', '😍', '🙏 Congrats', '😂', 'So true!'];
-  protected readonly menu = signal(false);
   protected readonly hidden = signal(false);
   protected readonly open = signal(false);
   protected readonly burst = signal(false);
   protected readonly translated = signal<boolean | null>(null);
 
-  protected readonly mine = computed(() => this.post().userId === ME_ID);
+  protected readonly mine = computed(() => this.post().userId === this.store.me.id);
   protected readonly liked = computed(() => this.store.liked().has(this.post().id));
   protected readonly saved = computed(() => this.store.saved().has(this.post().id));
   protected readonly likes = computed(() => compact(this.post().likes + (this.liked() ? 1 : 0)));
@@ -194,25 +184,13 @@ export class PostCard {
   }
 
   copy() {
-    this.menu.set(false);
     navigator.clipboard?.writeText(`${location.origin}/profile/${this.store.user(this.post().userId).username}`).catch(() => {});
     this.toast.show('Link copied');
   }
 
-  hide() {
-    this.menu.set(false);
-    this.hidden.set(true);
-  }
-
   remove() {
-    this.menu.set(false);
     this.store.deletePost(this.post().id);
     this.toast.show('Post deleted');
-  }
-
-  reportIt() {
-    this.menu.set(false);
-    this.report.open('post');
   }
 
   async share() {

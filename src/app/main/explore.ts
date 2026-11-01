@@ -1,12 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { USERS } from '../core/data';
 import { I18n } from '../core/i18n';
 import { Store, compact } from '../core/store';
 import { Icon } from '../shared/icon';
 import { Avatar, Name, SceneView } from '../shared/ui';
-
-const TOPICS = ['For you', 'Near you', 'Festivals', 'Food', 'Cricket', 'Farming', 'Jobs & skills', 'Travel'];
 
 @Component({
   selector: 'app-explore',
@@ -35,10 +32,6 @@ const TOPICS = ['For you', 'Near you', 'Festivals', 'Food', 'Cricket', 'Farming'
           @if (!people().length && !groups().length) { <p class="p-6 text-center text-sm text-muted">No results for “{{ q() }}”.</p> }
         </section>
       } @else {
-        <div class="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 sm:mx-0 sm:px-0">
-          @for (t of topics; track t) { <button class="chip" [class.chip-on]="topic() === t" (click)="topic.set(t)">{{ t }}</button> }
-        </div>
-
         <section>
           <h2 class="mb-2 font-bold">Trending in India</h2>
           <div class="flex flex-wrap gap-2">
@@ -81,16 +74,14 @@ export class Explore {
   protected readonly store = inject(Store);
   protected readonly i18n = inject(I18n);
   protected readonly compact = compact;
-  protected readonly topics = TOPICS;
-  protected readonly topic = signal(TOPICS[0]);
   protected readonly q = signal('');
 
   private readonly needle = computed(() => this.q().trim().toLowerCase().replace(/^#/, ''));
   protected readonly people = computed(() =>
-    USERS.filter((u) => u.id !== this.store.me.id && (u.name + ' ' + u.username + ' ' + u.city).toLowerCase().includes(this.needle())),
+    this.store.people.filter((u) => (u.name + ' ' + u.username + ' ' + u.city).toLowerCase().includes(this.needle())),
   );
   protected readonly groups = computed(() => this.store.groups.filter((g) => (g.name + ' ' + g.category + ' ' + g.about).toLowerCase().includes(this.needle())));
-  protected readonly suggestions = computed(() => USERS.filter((u) => u.id !== this.store.me.id && u.id !== 'sa' && !this.store.friends().has(u.id)));
+  protected readonly suggestions = computed(() => this.store.people.filter((u) => !this.store.friends().has(u.id)));
   protected readonly tiles = computed(() => [
     ...this.store.reels.map((r) => r.scene),
     ...this.store.posts().flatMap((p) => p.media ?? []),

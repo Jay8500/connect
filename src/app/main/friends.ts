@@ -1,6 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { USERS } from '../core/data';
 import { Store } from '../core/store';
 import { Icon } from '../shared/icon';
 import { Avatar, Name, Toast } from '../shared/ui';
@@ -68,7 +67,7 @@ export class Friends {
     switch (this.tab()) {
       case 'Requests': return [...this.store.requests()];
       case 'Your friends': return [...this.store.friends()];
-      default: return USERS.filter((u) => u.id !== 'u0' && u.id !== 'sa' && !this.store.friends().has(u.id) && !this.store.requests().has(u.id)).map((u) => u.id);
+      default: return this.store.people.filter((u) => !this.store.friends().has(u.id) && !this.store.requests().has(u.id)).map((u) => u.id);
     }
   });
 

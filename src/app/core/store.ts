@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CHATS, FRIEND_IDS, GROUPS, JOINED_GROUP_IDS, ME_ID, NOTIFICATIONS, POSTS, REELS, REQUEST_IDS, STORIES, SUGGESTION_IDS, TRENDING, USERS } from './data';
+import { CHATS, FRIEND_IDS, GROUPS, JOINED_GROUP_IDS, ME_ID, NOTIFICATIONS, POSTS, REELS, BIRTHDAY_IDS, OFFICIAL_ID, ONLINE_IDS, REQUEST_IDS, STORIES, TRENDING, USERS } from './data';
 import { Chat, Post, Settings, User } from './models';
 
 const SETTINGS_KEY = 'connect.settings';
@@ -21,6 +21,10 @@ export class Store {
   readonly reels = REELS;
   readonly groups = GROUPS;
   readonly trending = TRENDING;
+  readonly online = ONLINE_IDS;
+  readonly birthdays = BIRTHDAY_IDS;
+  /** Real people other than me (no official pages). */
+  readonly people = USERS.filter((u) => u.id !== ME_ID && u.id !== OFFICIAL_ID);
 
   readonly posts = signal<Post[]>(structuredClone(POSTS));
   readonly chats = signal<Chat[]>(structuredClone(CHATS));
@@ -30,7 +34,6 @@ export class Store {
   readonly votes = signal(new Map<string, number>());
   readonly friends = signal(new Set(FRIEND_IDS));
   readonly requests = signal(new Set(REQUEST_IDS));
-  readonly suggestions = signal(new Set(SUGGESTION_IDS));
   readonly sent = signal(new Set<string>());
   readonly joined = signal(new Set(JOINED_GROUP_IDS));
   readonly blocked = signal(new Set<string>());
@@ -128,7 +131,7 @@ export class Store {
   }
 
   send(chatId: string, text: string) {
-    const at = new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }).toUpperCase();
+    const at = clock();
     this.chats.update((list) =>
       list.map((c) => (c.id === chatId ? { ...c, request: false, messages: [...c.messages, { id: 'm' + Date.now(), from: 'me', text, at, status: 'sent' as const }] } : c)),
     );
@@ -136,7 +139,7 @@ export class Store {
 
   /** Demo only: a friend "replies" so the chat feels alive. */
   receive(chatId: string, from: string, text: string) {
-    const at = new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }).toUpperCase();
+    const at = clock();
     this.chats.update((list) =>
       list.map((c) =>
         c.id === chatId
@@ -193,6 +196,11 @@ export class Store {
       return DEFAULT_SETTINGS;
     }
   }
+}
+
+/** 4:05 PM */
+function clock(): string {
+  return new Date().toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }).toUpperCase();
 }
 
 function read(key: string): string | null {

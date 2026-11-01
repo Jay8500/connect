@@ -157,6 +157,25 @@ export class ToastHost {
   protected readonly toast = inject(Toast);
 }
 
+/** ⋯ button with a pop-up menu. Put `<button class="menu-item">` inside; any tap closes it. */
+@Component({
+  selector: 'app-dropdown',
+  imports: [Icon],
+  host: { class: 'relative inline-flex' },
+  template: `
+    <button type="button" [class]="buttonClass()" (click)="open.set(!open())" [attr.aria-label]="label()" [attr.aria-expanded]="open()"><svg lucideIcon="more" [size]="20" /></button>
+    @if (open()) {
+      <div class="fixed inset-0 z-10" (click)="open.set(false)"></div>
+      <div class="menu" role="menu" (click)="open.set(false)"><ng-content /></div>
+    }
+  `,
+})
+export class Dropdown {
+  readonly label = input('More options');
+  readonly buttonClass = input('icon-btn');
+  protected readonly open = signal(false);
+}
+
 /** On/off switch. */
 @Component({
   selector: 'app-switch',

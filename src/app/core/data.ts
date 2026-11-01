@@ -31,7 +31,9 @@ export const USERS: User[] = [
 
 export const FRIEND_IDS = ['u1', 'u2', 'u3', 'u5', 'u7', 'u8', 'u9'];
 export const REQUEST_IDS = ['u4', 'u10'];
-export const SUGGESTION_IDS = ['u6', 'u11'];
+export const OFFICIAL_ID = 'sa';
+export const ONLINE_IDS = ['u3', 'u2', 'u9', 'u8', 'u5'];
+export const BIRTHDAY_IDS = ['u9'];
 
 export const STORIES: Story[] = [
   { userId: 'u3', scene: S('#f59e0b', '#fde68a', '🌼', 'Sankranti muggu'), at: '1h' },

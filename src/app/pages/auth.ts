@@ -1,5 +1,6 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { LANGS } from '../core/i18n';
 import { Settings } from '../core/models';
 import { Store } from '../core/store';
 import { Icon } from '../shared/icon';
@@ -97,7 +98,7 @@ export class Auth {
 
   readonly mode = input<'login' | 'signup'>('login');
   protected readonly signup = computed(() => this.mode() === 'signup');
-  protected readonly langs: { id: Settings['lang']; label: string }[] = [{ id: 'en', label: 'English' }, { id: 'te', label: 'తెలుగు' }, { id: 'hi', label: 'हिन्दी' }];
+  protected readonly langs = LANGS;
   protected readonly today = new Date().toISOString().slice(0, 10);
 
   protected readonly step = signal<'form' | 'otp'>('form');
