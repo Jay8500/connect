@@ -55,7 +55,7 @@ const BOTTOM_NAV: NavItem[] = [
       <!-- Desktop sidebar -->
       <aside class="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col py-5 lg:flex">
         <app-logo link="/home" class="px-3" />
-        <nav class="mt-6 flex-1 space-y-1">
+        <nav class="no-scrollbar mt-6 min-h-0 flex-1 space-y-1 overflow-y-auto pb-2">
           @for (n of sideNav; track n.path) {
             <a [routerLink]="n.path" routerLinkActive="bg-white text-brand shadow-sm" class="flex items-center gap-3.5 rounded-2xl px-3 py-2.5 font-medium text-ink/80 transition-colors hover:bg-white">
               <span class="relative">

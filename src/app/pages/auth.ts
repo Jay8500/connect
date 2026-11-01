@@ -32,7 +32,7 @@ const NAME_RE = /^[\p{L}][\p{L}\p{M} .']{1,49}$/u;
               <div>
                 <label class="lbl" for="phone">Mobile number</label>
                 <div class="flex gap-2">
-                  <span class="input flex w-auto! items-center font-semibold">🇮🇳 +91</span>
+                  <span class="input flex w-auto! shrink-0 items-center font-semibold whitespace-nowrap">+91</span>
                   <input id="phone" class="input" [class.bad]="err('phone')" inputmode="numeric" maxlength="10" autocomplete="tel-national" placeholder="98765 43210" [value]="phone()" (input)="phone.set(digits($event))" />
                 </div>
                 @if (err('phone')) { <p class="msg">Enter a valid 10-digit Indian mobile number.</p> }

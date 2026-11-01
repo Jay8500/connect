@@ -15,7 +15,9 @@ const STORY_MS = 5000;
   template: `
     <div class="mx-auto max-w-[600px] space-y-4 px-3 py-4 sm:px-0 lg:py-6">
       <!-- Stories -->
-      <section class="no-scrollbar -mx-3 flex gap-3 overflow-x-auto px-3 sm:mx-0 sm:px-0" aria-label="Stories">
+      <div class="relative">
+      <button class="absolute top-1/2 right-1 z-10 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-line bg-white shadow-md sm:grid" (click)="row.scrollBy({ left: 320, behavior: 'smooth' })" aria-label="More stories"><svg lucideIcon="chevron-right" [size]="20" /></button>
+      <section #row class="no-scrollbar -mx-3 flex gap-3 overflow-x-auto px-3 sm:mx-0 sm:px-0" aria-label="Stories">
         <a routerLink="/create" class="story-tile border border-line bg-white">
           <div class="relative grid h-2/3 place-items-center bg-brand-50"><app-avatar [user]="store.me" [size]="52" /></div>
           <span class="absolute top-[58%] left-1/2 grid h-8 w-8 -translate-x-1/2 place-items-center rounded-full bg-brand text-white ring-4 ring-white"><svg lucideIcon="plus" [size]="18" /></span>
@@ -30,6 +32,7 @@ const STORY_MS = 5000;
           </button>
         }
       </section>
+      </div>
 
       <!-- Composer -->
       <section class="card p-3">
