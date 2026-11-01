@@ -13,6 +13,7 @@ These apply to every feature from now on. Check each new page/feature against th
 - HTTPS everywhere + HSTS (done), strict **Content-Security-Policy**, no inline secrets, all keys server-side only.
 - **Supabase RLS on every table**; anon access only through checked RPCs; server re-validates every input; amounts/permissions computed on the server.
 - Auth: OTP login, 2-step verification, new-login alerts, device list + log out others, session expiry, rate limits on login/OTP.
+- **Persistent login**: log in once and stay logged in on that phone (like WhatsApp/Instagram) — Supabase session with auto-refreshed tokens and refresh-token rotation; ends only on Log out, "log out all devices", password/phone change, or long inactivity; app lock (PIN/fingerprint) optional for shared phones.
 - Protect against OWASP Top 10: XSS (no `innerHTML` with user text), CSRF, injection, IDOR (never trust an id from the client), file-upload checks (type/size, strip EXIF location), brute force, bots (rate limits, honeypots).
 - Audit log of sensitive actions; alerts on abuse; regular dependency updates; security review / pen test before launch.
 
