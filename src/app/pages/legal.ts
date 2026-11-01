@@ -2,6 +2,15 @@ import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../shared/icon';
 import { Logo } from '../shared/ui';
+import { GrievanceForm } from './grievance-form';
+
+/** IT Rules 2021, Rule 3(2): name and contact details of the Grievance Officer. */
+const OFFICER = {
+  name: 'Lakkoju Jayaa Krishna',
+  phone: '+91 91820 54065',
+  tel: '+919182054065',
+  address: '3rd Floor, Shama House, BS Maqta, Begumpet, Hyderabad, Telangana 500082',
+};
 
 interface Doc {
   title: string;
@@ -53,9 +62,8 @@ const DOCS: Record<string, Doc> = {
     title: 'Grievance redressal',
     intro: 'As required by the IT Rules, 2021 and the DPDP Act, 2023, Connect will have a Grievance Officer based in India.',
     sections: [
-      { h: 'How to complain', p: ['In the app: tap ⋯ on any post, profile or chat → Report.', 'For anything else: write to the Grievance Officer (details below).'] },
+      { h: 'How to complain', p: ['In the app: tap ⋯ on any post, profile or chat → Report.', 'For anything else: use the complaint form below, call, or write to the Grievance Officer.'] },
       { h: 'Timelines', p: ['We acknowledge every complaint within 24 hours.', 'We resolve it within 15 days.', 'Content showing nudity or private images shared without consent is removed within 24 hours.'] },
-      { h: 'Grievance Officer', p: ['Name, email and address will be published here before Connect launches.'] },
       { h: 'Not satisfied?', p: ['You can appeal to the Grievance Appellate Committee (gac.gov.in) for content decisions, or to the Data Protection Board of India for personal data complaints.', 'For cyber fraud, call 1930 or report at cybercrime.gov.in.'] },
     ],
   },
@@ -63,7 +71,7 @@ const DOCS: Record<string, Doc> = {
 
 @Component({
   selector: 'app-legal',
-  imports: [RouterLink, Icon, Logo],
+  imports: [RouterLink, Icon, Logo, GrievanceForm],
   template: `
     <div class="min-h-dvh bg-white">
       <header class="border-b border-line">
@@ -82,6 +90,17 @@ const DOCS: Record<string, Doc> = {
             @for (p of s.p; track $index) { <li>{{ p }}</li> }
           </ul>
         }
+        @if (doc() === 'grievance') {
+          <section class="mt-10 rounded-3xl border border-line p-6">
+            <h2 class="text-lg font-bold">Grievance Officer</h2>
+            <dl class="mt-3 space-y-2 text-[15px]">
+              <div class="flex gap-3"><svg lucideIcon="user" [size]="18" class="mt-0.5 shrink-0 text-brand" /><dd><b>{{ officer.name }}</b></dd></div>
+              <div class="flex gap-3"><svg lucideIcon="phone" [size]="18" class="mt-0.5 shrink-0 text-brand" /><dd><a [href]="'tel:' + officer.tel" class="hover:underline">{{ officer.phone }}</a></dd></div>
+              <div class="flex gap-3"><svg lucideIcon="map-pin" [size]="18" class="mt-0.5 shrink-0 text-brand" /><dd>{{ officer.address }}</dd></div>
+            </dl>
+          </section>
+          <app-grievance-form class="mt-6 block" />
+        }
         <nav class="mt-12 flex flex-wrap gap-2 border-t border-line pt-6 text-sm">
           <a routerLink="/privacy" class="chip">Privacy</a>
           <a routerLink="/terms" class="chip">Terms</a>
@@ -95,5 +114,6 @@ const DOCS: Record<string, Doc> = {
 })
 export class Legal {
   readonly doc = input<string>('privacy');
+  protected readonly officer = OFFICER;
   protected readonly d = computed(() => DOCS[this.doc()] ?? DOCS['privacy']);
 }
