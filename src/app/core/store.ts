@@ -3,6 +3,7 @@ import { CHATS, FRIEND_IDS, GROUPS, JOINED_GROUP_IDS, ME_ID, NOTIFICATIONS, POST
 import { Chat, Post, Settings, User } from './models';
 
 const SETTINGS_KEY = 'connect.settings';
+const PHOTO_KEY = 'connect.myPhoto';
 const DEFAULT_SETTINGS: Settings = {
   lang: 'en', dataSaver: false, autoTranslate: false, whoCanMessage: 'Friends of friends', profileVisibility: 'Friends',
   showPhone: false, readReceipts: true, lastSeen: true, dailyLimit: 60, newLoginAlerts: true,
@@ -34,6 +35,8 @@ export class Store {
   readonly joined = signal(new Set(JOINED_GROUP_IDS));
   readonly blocked = signal(new Set<string>());
   readonly settings = signal<Settings>(this.loadSettings());
+  /** My profile photo as a small JPEG data URL (kept on this device in the preview). */
+  readonly myPhoto = signal<string | null>(read(PHOTO_KEY));
 
   readonly unreadChats = computed(() => this.chats().reduce((n, c) => n + (c.unread ? 1 : 0), 0));
   readonly unreadNotifications = computed(() => this.notifications().filter((n) => !n.read).length);
@@ -163,6 +166,16 @@ export class Store {
     this.notifications.update((list) => list.map((n) => ({ ...n, read: true })));
   }
 
+  setMyPhoto(dataUrl: string | null) {
+    this.myPhoto.set(dataUrl);
+    try {
+      if (dataUrl) localStorage.setItem(PHOTO_KEY, dataUrl);
+      else localStorage.removeItem(PHOTO_KEY);
+    } catch {
+      /* storage full or private mode: photo lasts until reload */
+    }
+  }
+
   /* Settings (remembered on this device) */
   updateSettings(patch: Partial<Settings>) {
     this.settings.update((s) => ({ ...s, ...patch }));
@@ -179,6 +192,14 @@ export class Store {
     } catch {
       return DEFAULT_SETTINGS;
     }
+  }
+}
+
+function read(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
   }
 }
 

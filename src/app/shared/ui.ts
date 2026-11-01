@@ -48,12 +48,21 @@ export class Logo {
         [style.background]="bg()"
         [attr.aria-label]="user().name"
         role="img"
-      >{{ initials() }}</span>
+      >
+        @if (photo(); as src) {
+          <img [src]="src" alt="" class="h-full w-full rounded-full object-cover" />
+        } @else {
+          {{ initials() }}
+        }
+      </span>
     </span>
   `,
 })
 export class Avatar {
+  private readonly store = inject(Store);
   readonly user = input.required<User>();
+  /** Only the signed-in user can have a real photo in the preview. */
+  protected readonly photo = computed(() => (this.user().id === this.store.me.id ? this.store.myPhoto() : null));
   readonly size = input(40);
   readonly ring = input(false);
   protected readonly initials = computed(() => {
@@ -111,16 +120,23 @@ export class SceneView {
   protected readonly bg = computed(() => `linear-gradient(135deg, ${this.scene().from}, ${this.scene().to})`);
 }
 
-/** Small toast at the bottom of the screen. */
+/** Small toast at the bottom of the screen, with an optional action like "Undo". */
 @Injectable({ providedIn: 'root' })
 export class Toast {
   readonly text = signal('');
+  readonly action = signal<{ label: string; run: () => void } | null>(null);
   private timer?: ReturnType<typeof setTimeout>;
 
-  show(text: string) {
+  show(text: string, action?: { label: string; run: () => void }) {
     this.text.set(text);
+    this.action.set(action ?? null);
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => this.text.set(''), 2600);
+    this.timer = setTimeout(() => this.text.set(''), action ? 5000 : 2600);
+  }
+
+  runAction() {
+    this.action()?.run();
+    this.text.set('');
   }
 }
 
@@ -129,7 +145,10 @@ export class Toast {
   template: `
     @if (toast.text()) {
       <div class="pointer-events-none fixed inset-x-0 bottom-24 z-[60] flex justify-center px-4 lg:bottom-8" role="status" aria-live="polite">
-        <div class="rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-white shadow-xl">{{ toast.text() }}</div>
+        <div class="pointer-events-auto flex items-center gap-3 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-white shadow-xl">
+          {{ toast.text() }}
+          @if (toast.action(); as a) { <button class="font-bold text-brand-3" (click)="toast.runAction()">{{ a.label }}</button> }
+        </div>
       </div>
     }
   `,

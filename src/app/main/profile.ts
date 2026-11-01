@@ -2,6 +2,7 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Store, compact } from '../core/store';
 import { Icon } from '../shared/icon';
+import { PhotoButton } from '../shared/photo';
 import { PostCard } from '../shared/post-card';
 import { Report } from '../shared/report';
 import { Avatar, SceneView, Toast } from '../shared/ui';
@@ -10,7 +11,7 @@ type Tab = 'Posts' | 'Photos' | 'About';
 
 @Component({
   selector: 'app-profile',
-  imports: [RouterLink, Icon, Avatar, SceneView, PostCard],
+  imports: [RouterLink, Icon, Avatar, SceneView, PostCard, PhotoButton],
   template: `
     @if (user(); as u) {
       <div class="mx-auto max-w-[680px] lg:py-6">
@@ -18,7 +19,10 @@ type Tab = 'Posts' | 'Photos' | 'About';
           <app-scene [scene]="cover()" [emoji]="56" [caption]="false" class="h-36 sm:h-48" />
           <div class="px-4 pb-4">
             <div class="relative z-10 -mt-12 flex items-end justify-between gap-3">
-              <app-avatar [user]="u" [size]="104" class="rounded-full ring-4 ring-white" />
+              <span class="relative">
+                <app-avatar [user]="u" [size]="104" class="rounded-full ring-4 ring-white" />
+                @if (isMe()) { <span class="absolute right-0 bottom-0"><app-photo-button /></span> }
+              </span>
               <div class="flex gap-2 pb-1">
                 @if (isMe()) {
                   <button class="btn btn-primary btn-sm" (click)="toast.show('Edit profile (real app)')">Edit profile</button>
@@ -45,7 +49,9 @@ type Tab = 'Posts' | 'Photos' | 'About';
               </div>
             </div>
             <h1 class="mt-3 flex items-center gap-1.5 text-2xl font-extrabold">{{ u.name }} @if (u.verified) { <svg lucideIcon="badge-check" [size]="22" class="text-sky-500" /> }</h1>
-            <p class="text-sm text-muted">&#64;{{ u.username }}</p>
+            <p class="text-sm text-muted">&#64;{{ u.username }}
+              @if (isMe() && store.myPhoto()) { · <button class="font-semibold text-love" (click)="removePhoto()">Remove photo</button> }
+            </p>
             <p class="mt-2 text-[15px]">{{ u.bio }}</p>
             <div class="mt-3 flex gap-5 text-sm">
               <span class="text-muted"><b class="text-ink">{{ posts().length }}</b> posts</span>
@@ -130,6 +136,12 @@ export class Profile {
 
   message() {
     this.router.navigate(['/chats', this.store.chatWith(this.user()!.id)]);
+  }
+
+  removePhoto() {
+    const before = this.store.myPhoto();
+    this.store.setMyPhoto(null);
+    this.toast.show('Profile photo removed', { label: 'Undo', run: () => this.store.setMyPhoto(before) });
   }
 
   block() {

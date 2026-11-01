@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { I18n, WordKey } from '../core/i18n';
 import { Store } from '../core/store';
 import { Icon } from '../shared/icon';
+import { PhotoButton } from '../shared/photo';
 import { Avatar } from '../shared/ui';
 
 const SHORTCUTS: { path: string; icon: string; word: WordKey; cls: string }[] = [
@@ -17,14 +18,19 @@ const SHORTCUTS: { path: string; icon: string; word: WordKey; cls: string }[] = 
 /** Phone-only "You" tab: profile, shortcuts and legal links. */
 @Component({
   selector: 'app-menu',
-  imports: [RouterLink, Icon, Avatar],
+  imports: [RouterLink, Icon, Avatar, PhotoButton],
   template: `
     <div class="mx-auto max-w-[600px] space-y-4 px-3 py-4">
-      <a [routerLink]="['/profile', store.me.username]" class="card flex items-center gap-3 p-4">
-        <app-avatar [user]="store.me" [size]="56" />
-        <span class="flex-1"><b class="block text-lg">{{ store.me.name }}</b><span class="text-sm text-muted">See your profile</span></span>
-        <svg lucideIcon="chevron-right" [size]="20" class="text-muted" />
-      </a>
+      <div class="card flex items-center gap-3 p-4">
+        <span class="relative">
+          <app-avatar [user]="store.me" [size]="56" />
+          <span class="absolute -right-1 -bottom-1"><app-photo-button cls="grid h-7 w-7 place-items-center rounded-full bg-brand text-white ring-2 ring-white" [iconSize]="14" /></span>
+        </span>
+        <a [routerLink]="['/profile', store.me.username]" class="flex flex-1 items-center">
+          <span class="flex-1"><b class="block text-lg">{{ store.me.name }}</b><span class="text-sm text-muted">See your profile</span></span>
+          <svg lucideIcon="chevron-right" [size]="20" class="text-muted" />
+        </a>
+      </div>
       <div class="grid grid-cols-2 gap-3">
         @for (s of shortcuts; track s.path) {
           <a [routerLink]="s.path" class="card flex flex-col gap-2 p-4 font-semibold"><svg [lucideIcon]="s.icon" [size]="24" [class]="s.cls" />{{ i18n.t(s.word) }}</a>
