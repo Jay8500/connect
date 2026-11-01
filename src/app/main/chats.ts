@@ -147,6 +147,11 @@ const REPLIES = ['😊👍', 'Sare, ok!', 'Haha 😂', 'Will call you in the eve
               </div>
             </div>
           } @else {
+            @if (!draft()) {
+              <div class="no-scrollbar flex gap-2 overflow-x-auto bg-white px-3 pt-2">
+                @for (q of quickReplies; track q) { <button class="chip shrink-0" (click)="quick(c, q)">{{ q }}</button> }
+              </div>
+            }
             <form class="flex items-end gap-2 bg-white p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]" (submit)="$event.preventDefault(); send(c)">
               <button type="button" class="icon-btn" (click)="toast.show('Emoji & stickers (real app)')" aria-label="Emoji"><svg lucideIcon="smile" [size]="22" /></button>
               <button type="button" class="icon-btn" (click)="toast.show('Share photo, document, location, contact (real app)')" aria-label="Attach"><svg lucideIcon="paperclip" [size]="21" /></button>
@@ -197,6 +202,7 @@ export class Chats implements OnDestroy {
   protected readonly draft = signal('');
   protected readonly menu = signal(false);
   protected readonly typing = signal(false);
+  protected readonly quickReplies = ['👍', 'Ok 👌', 'Call you later 📞', 'On my way 🛵', 'Thank you 🙏', 'Happy birthday 🎂'];
   protected readonly wave = [30, 60, 45, 80, 50, 90, 40, 70, 35, 65, 85, 45, 30, 55, 75, 40, 60, 30];
   protected readonly photo = { from: '#f59e0b', to: '#fde68a', emoji: '🎉', label: 'Function' };
   private timer?: ReturnType<typeof setTimeout>;
@@ -261,6 +267,11 @@ export class Chats implements OnDestroy {
   onEnter(e: Event, c: Chat) {
     if ((e as KeyboardEvent).shiftKey) return;
     e.preventDefault();
+    this.send(c);
+  }
+
+  quick(c: Chat, text: string) {
+    this.draft.set(text);
     this.send(c);
   }
 

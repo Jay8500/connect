@@ -5,7 +5,7 @@ import { filter, map } from 'rxjs';
 import { I18n, WordKey } from '../core/i18n';
 import { Store } from '../core/store';
 import { Icon } from '../shared/icon';
-import { Avatar, Logo, Name } from '../shared/ui';
+import { Avatar, Logo, Toast } from '../shared/ui';
 
 interface NavItem {
   path: string;
@@ -16,13 +16,12 @@ interface NavItem {
 
 const SIDE_NAV: NavItem[] = [
   { path: '/home', icon: 'home', word: 'home' },
-  { path: '/reels', icon: 'film', word: 'reels' },
-  { path: '/explore', icon: 'compass', word: 'explore' },
   { path: '/chats', icon: 'message', word: 'chats', badge: 'chats' },
+  { path: '/reels', icon: 'film', word: 'reels' },
+  { path: '/explore', icon: 'search', word: 'search' },
   { path: '/notifications', icon: 'bell', word: 'notifications', badge: 'notifications' },
   { path: '/friends', icon: 'users', word: 'friends' },
   { path: '/groups', icon: 'heart-handshake', word: 'groups' },
-  { path: '/settings', icon: 'settings', word: 'settings' },
 ];
 
 const BOTTOM_NAV: NavItem[] = [
@@ -33,9 +32,11 @@ const BOTTOM_NAV: NavItem[] = [
   { path: '/menu', icon: 'user', word: 'profile' },
 ];
 
+const BANNER_KEY = 'connect.previewNoteHidden';
+
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, Logo, Avatar, Name],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, Logo, Avatar],
   template: `
     <!-- Mobile top bar -->
     @if (!fullScreen()) {
@@ -51,84 +52,89 @@ const BOTTOM_NAV: NavItem[] = [
       </header>
     }
 
-    <div class="mx-auto flex max-w-[1320px] gap-6 lg:px-4">
+    <div class="mx-auto flex max-w-[1240px] gap-8 lg:px-6">
       <!-- Desktop sidebar -->
-      <aside class="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col py-5 lg:flex">
+      <aside class="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col py-6 lg:flex">
         <app-logo link="/home" class="px-3" />
-        <nav class="no-scrollbar mt-6 min-h-0 flex-1 space-y-1 overflow-y-auto pb-2">
+        <nav class="no-scrollbar mt-8 min-h-0 flex-1 space-y-0.5 overflow-y-auto">
           @for (n of sideNav; track n.path) {
-            <a [routerLink]="n.path" routerLinkActive="bg-white text-brand shadow-sm" class="flex items-center gap-3.5 rounded-2xl px-3 py-2.5 font-medium text-ink/80 transition-colors hover:bg-white">
+            <a [routerLink]="n.path" routerLinkActive="active" class="nav">
               <span class="relative">
-                <svg [lucideIcon]="n.icon" [size]="22" />
+                <svg [lucideIcon]="n.icon" [size]="21" />
                 @if (badge(n); as b) { <span class="dot">{{ b }}</span> }
               </span>
               {{ i18n.t(n.word) }}
             </a>
           }
-          <a routerLink="/create" class="btn btn-primary mt-4 w-full"><svg lucideIcon="plus" [size]="18" />{{ i18n.t('create') }}</a>
+          <a routerLink="/create" class="btn btn-primary mt-5 w-full"><svg lucideIcon="plus" [size]="18" />{{ i18n.t('create') }}</a>
         </nav>
-        <a [routerLink]="['/profile', store.me.username]" class="flex items-center gap-3 rounded-2xl p-2 hover:bg-white">
-          <app-avatar [user]="store.me" [size]="38" />
-          <span class="min-w-0 text-sm leading-tight"><span class="block truncate font-semibold">{{ store.me.name }}</span><span class="text-muted">&#64;{{ store.me.username }}</span></span>
-        </a>
+        <div class="flex items-center gap-1 border-t border-line pt-3">
+          <a [routerLink]="['/profile', store.me.username]" class="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl p-1.5 hover:bg-white">
+            <app-avatar [user]="store.me" [size]="34" />
+            <span class="truncate text-sm font-semibold">{{ store.me.name }}</span>
+          </a>
+          <a routerLink="/settings" class="icon-btn" [attr.aria-label]="i18n.t('settings')"><svg lucideIcon="settings" [size]="19" /></a>
+        </div>
       </aside>
 
       <main class="min-w-0 flex-1 lg:pb-10" [class.pb-24]="!fullScreen()">
         @if (banner() && !fullScreen()) {
-          <div class="mx-auto flex max-w-[680px] items-center gap-2 bg-ink px-4 py-2 text-xs text-white lg:mt-4 lg:rounded-2xl">
-            <svg lucideIcon="sparkles" [size]="14" class="shrink-0 text-brand-3" />
-            <span class="flex-1">Preview with demo content — nothing you do here is saved or sent.</span>
-            <button class="shrink-0 rounded-full p-1 hover:bg-white/10" (click)="banner.set(false)" aria-label="Hide preview note"><svg lucideIcon="x" [size]="14" /></button>
+          <div class="mx-auto mt-3 flex max-w-[560px] items-center gap-2 rounded-full bg-amber-50 py-1.5 pr-1.5 pl-4 text-xs text-amber-900 max-sm:mx-4 lg:mt-6">
+            <span class="flex-1">Preview with demo content — nothing is saved.</span>
+            <button class="rounded-full p-1 hover:bg-amber-100" (click)="hideBanner()" aria-label="Hide preview note"><svg lucideIcon="x" [size]="14" /></button>
           </div>
         }
         <router-outlet />
       </main>
 
-      <!-- Desktop right column (chats get the full width instead) -->
+      <!-- Desktop right column: only what needs action (chats get the full width instead) -->
       @if (!onChats()) {
-      <aside class="sticky top-0 hidden h-dvh w-72 shrink-0 overflow-y-auto py-5 xl:block">
-        <section class="card p-4">
-          <h2 class="flex items-center gap-2 text-sm font-bold"><svg lucideIcon="cake" [size]="17" class="text-love" />Birthdays</h2>
-          <p class="mt-2 text-sm"><b>Sneha Patil</b> has a birthday today. Send her a wish! 🎉</p>
-        </section>
-
-        @if (store.requests().size) {
-          <section class="card mt-4 p-4">
-            <div class="flex items-center justify-between"><h2 class="text-sm font-bold">Friend requests</h2><a routerLink="/friends" class="text-xs font-semibold text-brand">See all</a></div>
-            @for (id of requestIds(); track id) {
-              @let u = store.user(id);
-              <div class="mt-3 flex items-center gap-3">
-                <app-avatar [user]="u" [size]="40" />
-                <div class="min-w-0 flex-1 text-sm">
-                  <app-name [user]="u" />
-                  <p class="text-xs text-muted">{{ u.mutual }} mutual friends</p>
-                  <div class="mt-1.5 flex gap-2">
-                    <button class="btn btn-primary btn-sm min-h-8!" (click)="store.acceptRequest(id)">Confirm</button>
-                    <button class="btn btn-ghost btn-sm min-h-8!" (click)="store.declineRequest(id)">Delete</button>
-                  </div>
-                </div>
-              </div>
-            }
-          </section>
-        }
-
-        <section class="card mt-4 p-4">
-          <h2 class="text-sm font-bold">Friends online</h2>
-          @for (id of onlineIds; track id) {
-            @let u = store.user(id);
-            <button class="mt-2 flex w-full items-center gap-3 rounded-xl p-1 text-left text-sm hover:bg-soft" (click)="openChat(id)">
-              <span class="relative"><app-avatar [user]="u" [size]="34" /><span class="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span></span>
-              {{ u.name }}
-            </button>
+        <aside class="sticky top-0 hidden h-dvh w-72 shrink-0 space-y-6 overflow-y-auto py-8 xl:block">
+          @if (!wished()) {
+            <div class="flex items-center gap-3 rounded-2xl bg-white p-3">
+              <span class="grid h-10 w-10 place-items-center rounded-full bg-rose-50 text-love"><svg lucideIcon="cake" [size]="20" /></span>
+              <p class="flex-1 text-sm leading-snug"><b>Sneha</b>’s birthday today</p>
+              <button class="btn btn-primary btn-sm min-h-8!" (click)="wish()">Wish 🎉</button>
+            </div>
           }
-        </section>
 
-        <footer class="mt-4 px-2 text-[11px] leading-relaxed text-muted">
-          <a routerLink="/privacy" class="hover:underline">Privacy</a> · <a routerLink="/terms" class="hover:underline">Terms</a> ·
-          <a routerLink="/guidelines" class="hover:underline">Community guidelines</a> · <a routerLink="/grievance" class="hover:underline">Grievance officer</a>
-          <p class="mt-1">Powered by <b>Spread Apps™</b> · Made with ❤️ in India</p>
-        </footer>
-      </aside>
+          @if (requestIds().length) {
+            <section>
+              <div class="mb-2 flex items-center justify-between px-1"><h2 class="text-sm font-bold text-muted">Friend requests</h2><a routerLink="/friends" class="text-xs font-semibold text-brand">See all</a></div>
+              @for (id of requestIds(); track id) {
+                @let u = store.user(id);
+                <div class="flex items-center gap-3 rounded-2xl p-2 hover:bg-white">
+                  <app-avatar [user]="u" [size]="40" />
+                  <div class="min-w-0 flex-1 leading-tight">
+                    <p class="truncate text-sm font-semibold">{{ u.name }}</p>
+                    <p class="text-xs text-muted">{{ u.mutual }} mutual</p>
+                  </div>
+                  <button class="grid h-8 w-8 place-items-center rounded-full bg-brand text-white" (click)="store.acceptRequest(id)" aria-label="Confirm"><svg lucideIcon="check" [size]="16" /></button>
+                  <button class="grid h-8 w-8 place-items-center rounded-full bg-soft text-muted hover:bg-line" (click)="store.declineRequest(id)" aria-label="Delete"><svg lucideIcon="x" [size]="16" /></button>
+                </div>
+              }
+            </section>
+          }
+
+          <section>
+            <h2 class="mb-2 px-1 text-sm font-bold text-muted">Online now</h2>
+            <div class="flex flex-wrap gap-3 px-1">
+              @for (id of onlineIds; track id) {
+                @let u = store.user(id);
+                <button class="relative" (click)="openChat(id)" [attr.aria-label]="'Chat with ' + u.name" [title]="u.name">
+                  <app-avatar [user]="u" [size]="44" />
+                  <span class="absolute right-0 bottom-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-soft"></span>
+                </button>
+              }
+            </div>
+          </section>
+
+          <footer class="px-1 text-[11px] leading-relaxed text-muted">
+            <a routerLink="/privacy" class="hover:underline">Privacy</a> · <a routerLink="/terms" class="hover:underline">Terms</a> ·
+            <a routerLink="/guidelines" class="hover:underline">Guidelines</a> · <a routerLink="/grievance" class="hover:underline">Grievance</a>
+            <p class="mt-1">Powered by <b>Spread Apps™</b> · Made with ❤️ in India</p>
+          </footer>
+        </aside>
       }
     </div>
 
@@ -148,6 +154,9 @@ const BOTTOM_NAV: NavItem[] = [
     }
   `,
   styles: `
+    .nav { display: flex; align-items: center; gap: 0.9rem; border-radius: 0.9rem; padding: 0.6rem 0.75rem; font-size: 0.95rem; font-weight: 500; color: rgb(11 17 32 / 0.75); transition: background 0.2s, color 0.2s; }
+    .nav:hover { background: #fff; }
+    .nav.active { background: #fff; color: var(--color-brand); font-weight: 600; }
     .dot { position: absolute; top: -6px; right: -8px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9999px; background: var(--color-love); color: #fff; font-size: 10px; font-weight: 700; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px #fff; }
   `,
 })
@@ -155,14 +164,16 @@ export class Shell {
   protected readonly store = inject(Store);
   protected readonly i18n = inject(I18n);
   private readonly router = inject(Router);
+  private readonly toast = inject(Toast);
 
   protected readonly sideNav = SIDE_NAV;
   protected readonly bottomNav = BOTTOM_NAV;
-  protected readonly onlineIds = ['u3', 'u2', 'u9', 'u8'];
-  protected readonly banner = signal(true);
+  protected readonly onlineIds = ['u3', 'u2', 'u9', 'u8', 'u5'];
+  protected readonly banner = signal(!readFlag(BANNER_KEY));
+  protected readonly wished = signal(false);
 
   private readonly url = toSignal(this.router.events.pipe(filter((e) => e instanceof NavigationEnd), map(() => this.router.url)), { initialValue: this.router.url });
-  /** An open chat or reels use the whole phone screen. */
+  /** An open chat uses the whole phone screen. */
   protected readonly fullScreen = computed(() => /^\/chats\/./.test(this.url()));
   protected readonly onChats = computed(() => this.url().startsWith('/chats'));
   protected readonly requestIds = computed(() => [...this.store.requests()]);
@@ -175,5 +186,29 @@ export class Shell {
 
   openChat(userId: string) {
     this.router.navigate(['/chats', this.store.chatWith(userId)]);
+  }
+
+  /** One tap birthday wish, straight into her chat. */
+  wish() {
+    this.store.send(this.store.chatWith('u9'), 'Happy birthday Sneha! 🎂🎉 Have a wonderful year!');
+    this.wished.set(true);
+    this.toast.show('Birthday wish sent to Sneha 🎉');
+  }
+
+  hideBanner() {
+    this.banner.set(false);
+    try {
+      localStorage.setItem(BANNER_KEY, '1');
+    } catch {
+      /* private mode */
+    }
+  }
+}
+
+function readFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
   }
 }
