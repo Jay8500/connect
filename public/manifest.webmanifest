@@ -1,0 +1,10 @@
+{
+  "name": "Connect by Spread Apps",
+  "short_name": "Connect",
+  "description": "India's own social app: friends, family, chats and reels, in your language.",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d9488",
+  "icons": [{ "src": "connect-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
