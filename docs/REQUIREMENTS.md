@@ -24,6 +24,15 @@ Self-hosted or own fine-tuned open models, data kept in India:
 - **Scam & abuse detection** in chats/posts, fake-news hints, NSFW image filter — open classifiers, fine-tuned on Indian data.
 - **Smart helpers**: reply suggestions, caption writing, simple "explain this" in the user's language — open LLMs (Llama / Gemma / Sarvam / Mistral family) fine-tuned for Connect.
 - Users must be told when AI is used and can turn it off (DPDP consent).
+- **Keep AI cost near zero:** run small models **on the user's phone/browser** first (Transformers.js / WebGPU: small Whisper, small translation, image filter) → no server bill; only small CPU-friendly models on our server; GPU only when usage pays for it. Government's free **Bhashini** APIs (Indian-language translation / speech) as a fallback. Pick models made for Connect's jobs (Indian languages, scams, chat) — no big general chatbots.
+
+## 3b. Verified tick for genuine accounts (free, not paid)
+- **Verified person** ✓ — real human, ID-checked once. **Official** ✓ — business/organisation (Udyam/GST/registration docs). **Public figure** — notable creators, by review.
+- Tick is **free** (unlike paid Meta Verified); removed if the account is sold, renamed to impersonate, or breaks rules.
+- **Aadhaar rules (Supreme Court 2018 + Aadhaar Act):** a private app **cannot make Aadhaar compulsory** to create an account. So:
+  - Sign-up stays mobile-OTP only; ID check is **optional** and only for the tick.
+  - Offer **DigiLocker** or **Aadhaar Offline e-KYC / secure QR** (UIDAI-signed, no Aadhaar number shared) — plus alternatives (PAN, driving licence, voter ID).
+  - **Never store the Aadhaar number** or card image — keep only "verified on <date>, method", name/DOB match result, and the last 4 digits if needed. Explicit DPDP consent; data in India.
 
 ## 4. Easy for everyone — literate and non-literate
 - **Voice first**: speak to search, post, message; every screen can read itself aloud.

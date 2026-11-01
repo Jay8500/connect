@@ -25,5 +25,6 @@
 - [ ] Clean URLs: remove ids/usernames from the address bar (router state + opaque share tokens)
 - [ ] Security: chat E2E encryption, encrypted sensitive columns, CSP, rate limits, audit log, pen test
 - [ ] Open-source AI: IndicTrans2 translation, Whisper/IndicConformer voice-to-text, Indic TTS read-aloud, scam/NSFW detection, reply suggestions
+- [ ] Verified tick (free): optional ID check via DigiLocker / Aadhaar offline e-KYC (never compulsory, never store Aadhaar number); Official tick for businesses
 - [ ] Simple mode + voice-first for non-literate users; accessibility (WCAG AA)
 - [ ] Voice/video calls (LiveKit) — later
