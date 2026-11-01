@@ -26,14 +26,14 @@ const DOCS: Record<string, Doc> = {
   },
   terms: {
     title: 'Terms of use',
-    intro: 'By using Connect you agree to these terms. Connect is a product of Spread Apps™, India.',
+    intro: 'By using Connect you agree to these terms. Connect is a product of Spread Apps™, an MSME (Udyam) registered in Hyderabad, Telangana, India.',
     sections: [
       { h: 'Who can use Connect', p: ['You must be 18 or older and use your real name. One personal account per person.'] },
       { h: 'Your content', p: ['You own what you post. You give us permission to show it to the audience you choose. You can delete it any time.'] },
       { h: 'What is not allowed', p: ['Anything that breaks Indian law or our Community guidelines: scams, hate, harassment, nudity, child abuse material, fake news, impersonation, or copyright violation.'] },
       { h: 'Our role', p: ['Connect is an intermediary under the IT Act, 2000. We act on valid complaints and government orders as the IT Rules, 2021 require.'] },
       { h: 'Ending your account', p: ['You can delete your account any time. We may suspend accounts that seriously or repeatedly break these terms — you can appeal through the Grievance Officer.'] },
-      { h: 'Law & disputes', p: ['These terms follow the laws of India. Courts in Andhra Pradesh have jurisdiction.'] },
+      { h: 'Law & disputes', p: ['These terms follow the laws of India. Courts in Hyderabad, Telangana have jurisdiction.'] },
     ],
   },
   guidelines: {
